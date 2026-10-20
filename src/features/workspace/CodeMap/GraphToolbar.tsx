@@ -18,6 +18,7 @@ interface GraphToolbarProps {
   onSelectComplexity: (c: string) => void;
   nodesCount: number;
   edgesCount: number;
+  onExportGraph?: () => void;
 }
 
 export const GraphToolbar: React.FC<GraphToolbarProps> = ({
@@ -33,6 +34,7 @@ export const GraphToolbar: React.FC<GraphToolbarProps> = ({
   onSelectComplexity,
   nodesCount,
   edgesCount,
+  onExportGraph,
 }) => {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 bg-white border-b border-slate-200">
@@ -113,6 +115,16 @@ export const GraphToolbar: React.FC<GraphToolbarProps> = ({
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
+
+        {onExportGraph && (
+          <button
+            onClick={onExportGraph}
+            className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 transition-colors ml-1"
+            title="Export topological graph data"
+          >
+            Export Graph
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
 import { Button } from '../../../components/common/Button';
 import { Input } from '../../../components/common/Input';
@@ -6,8 +7,9 @@ import { Settings, Save, Trash2 } from 'lucide-react';
 import { useNotification } from '../../../context/NotificationContext';
 
 export const ProjectSettingsView: React.FC = () => {
-  const { selectedProject } = useProject();
+  const { selectedProject, deleteProject } = useProject();
   const { showNotification } = useNotification();
+  const navigate = useNavigate();
 
   const [name, setName] = useState(selectedProject.name);
   const [description, setDescription] = useState(selectedProject.description);
@@ -114,13 +116,14 @@ export const ProjectSettingsView: React.FC = () => {
             type="button"
             variant="danger"
             size="sm"
-            onClick={() =>
-              showNotification({
-                title: 'Demo Action',
-                message: 'Project deletion is disabled in Stage 1 demo mode.',
-                type: 'warning',
-              })
-            }
+            onClick={() => {
+              if (window.confirm(`Are you sure you want to remove ${selectedProject.name} from the workspace?`)) {
+                const deleted = deleteProject(selectedProject.id);
+                if (deleted) {
+                  navigate('/dashboard');
+                }
+              }
+            }}
             leftIcon={<Trash2 className="w-3.5 h-3.5" />}
           >
             Remove Project from Workspace

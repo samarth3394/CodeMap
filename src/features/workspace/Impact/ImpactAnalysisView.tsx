@@ -3,17 +3,25 @@ import { MOCK_IMPACT_PROPOSALS } from '../../../data/mockData';
 import { ImpactChangeProposal } from '../../../types/analysis';
 import { Button } from '../../../components/common/Button';
 import { Badge } from '../../../components/common/Badge';
+import { Modal } from '../../../components/common/Modal';
+import { Input } from '../../../components/common/Input';
 import {
   Zap,
   AlertTriangle,
   FileCode,
   Play,
+  Plus,
 } from 'lucide-react';
 import { useNotification } from '../../../context/NotificationContext';
 
 export const ImpactAnalysisView: React.FC = () => {
-  const [proposals] = useState<ImpactChangeProposal[]>(MOCK_IMPACT_PROPOSALS);
+  const [proposals, setProposals] = useState<ImpactChangeProposal[]>(MOCK_IMPACT_PROPOSALS);
   const [selectedPropId, setSelectedPropId] = useState<string>(MOCK_IMPACT_PROPOSALS[0].id);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newTarget, setNewTarget] = useState('InventoryService.reserve_items');
+  const [newFile, setNewFile] = useState('app/services/inventory_service.py');
+  const [newRisk, setNewRisk] = useState<'low' | 'medium' | 'high'>('medium');
   const { showNotification } = useNotification();
 
   const selectedProposal =
@@ -24,6 +32,48 @@ export const ImpactAnalysisView: React.FC = () => {
       title: 'Impact Simulation Complete',
       message: `Identified ${selectedProposal.impactedFiles.length} impacted files and ${selectedProposal.impactedTests.length} test suites requiring attention.`,
       type: 'info',
+    });
+  };
+
+  const handleAddCustomSimulation = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTarget.trim()) return;
+
+    const newProp: ImpactChangeProposal = {
+      id: `prop-${Date.now().toString(36)}`,
+      title: newTitle.trim() || `Refactor ${newTarget}() logic`,
+      targetSymbol: newTarget.trim(),
+      targetFile: newFile.trim() || 'app/services/inventory_service.py',
+      changeType: 'signature_change',
+      riskScore: newRisk,
+      impactedFiles: [
+        {
+          path: 'app/services/checkout_service.py',
+          affectedSymbols: ['CheckoutService.execute_checkout'],
+          riskLevel: 'direct',
+          lines: [42],
+        },
+        {
+          path: 'tests/test_checkout.py',
+          affectedSymbols: ['test_successful_checkout_flow'],
+          riskLevel: 'direct',
+          lines: [88],
+        },
+      ],
+      impactedTests: [
+        { testFile: 'tests/test_checkout.py', testName: 'test_successful_checkout_flow', mustUpdate: true },
+      ],
+    };
+
+    setProposals([newProp, ...proposals]);
+    setSelectedPropId(newProp.id);
+    setIsModalOpen(false);
+    setNewTitle('');
+
+    showNotification({
+      title: 'Simulation Created',
+      message: `Simulated blast radius for ${newProp.targetSymbol}.`,
+      type: 'success',
     });
   };
 
@@ -50,14 +100,24 @@ export const ImpactAnalysisView: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={handleRunSimulation}
-          leftIcon={<Play className="w-3.5 h-3.5" />}
-        >
-          Run Blast Radius Check
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsModalOpen(true)}
+            leftIcon={<Plus className="w-3.5 h-3.5" />}
+          >
+            New Simulation
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleRunSimulation}
+            leftIcon={<Play className="w-3.5 h-3.5" />}
+          >
+            Run Blast Radius Check
+          </Button>
+        </div>
       </div>
 
       {/* Main Grid: Proposal selector + Proposal detail */}
@@ -183,6 +243,70 @@ export const ImpactAnalysisView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* New Simulation Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Simulate Code Refactoring"
+        description="Choose a function or class to compute downstream caller impact and affected tests."
+        footer={
+          <>
+            <Button variant="secondary" size="sm" onClick={() => setIsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleAddCustomSimulation}
+              leftIcon={<Play className="w-3.5 h-3.5" />}
+            >
+              Run Simulation
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleAddCustomSimulation} className="space-y-4">
+          <Input
+            label="Proposal Title / Hypothesis"
+            placeholder="e.g. Change inventory reservation TTL to 600s"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+          />
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Target Symbol"
+              placeholder="e.g. InventoryService.reserve_items"
+              value={newTarget}
+              onChange={(e) => setNewTarget(e.target.value)}
+              required
+            />
+            <Input
+              label="Target File Path"
+              placeholder="app/services/inventory_service.py"
+              value={newFile}
+              onChange={(e) => setNewFile(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              Simulated Risk Score
+            </label>
+            <select
+              value={newRisk}
+              onChange={(e) => setNewRisk(e.target.value as any)}
+              className="w-full text-xs bg-white border border-slate-300 rounded-lg py-2 px-3 text-slate-800 focus-ring"
+            >
+              <option value="low">Low Risk (Local scope)</option>
+              <option value="medium">Medium Risk (Service boundaries)</option>
+              <option value="high">High Risk (Cross-cutting transactions)</option>
+            </select>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

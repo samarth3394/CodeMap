@@ -11,6 +11,7 @@ interface ProjectContextType {
   setCurrentBranch: (branch: string) => void;
   toggleStarProject: (id: string) => void;
   createProject: (newProj: Omit<Project, 'id' | 'lastAnalyzedAt' | 'commitHash' | 'stats'>) => void;
+  deleteProject: (id: string) => boolean;
   isProjectModalOpen: boolean;
   setIsProjectModalOpen: (open: boolean) => void;
 }
@@ -76,6 +77,32 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
+  const deleteProject = (id: string): boolean => {
+    if (projects.length <= 1) {
+      showNotification({
+        title: 'Cannot Delete Only Project',
+        message: 'At least one repository must remain in the workspace.',
+        type: 'warning',
+      });
+      return false;
+    }
+
+    const remaining = projects.filter((p) => p.id !== id);
+    setProjects(remaining);
+
+    if (selectedProjectId === id) {
+      setSelectedProjectId(remaining[0].id);
+      setCurrentBranch(remaining[0].defaultBranch);
+    }
+
+    showNotification({
+      title: 'Project Deleted',
+      message: 'Repository has been removed from workspace.',
+      type: 'info',
+    });
+    return true;
+  };
+
   return (
     <ProjectContext.Provider
       value={{
@@ -86,6 +113,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setCurrentBranch,
         toggleStarProject,
         createProject,
+        deleteProject,
         isProjectModalOpen,
         setIsProjectModalOpen,
       }}

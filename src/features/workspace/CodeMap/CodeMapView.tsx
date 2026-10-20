@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
+import { useNotification } from '../../../context/NotificationContext';
 import { MOCK_GRAPH_NODES, MOCK_GRAPH_EDGES } from '../../../data/mockData';
 import { GraphNode } from '../../../types/graph';
 import { GraphToolbar } from './GraphToolbar';
@@ -10,12 +11,35 @@ import { NodeDetailPanel } from './NodeDetailPanel';
 export const CodeMapView: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { selectedProject } = useProject();
+  const { showNotification } = useNotification();
 
   const [zoom, setZoom] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLayer, setSelectedLayer] = useState('all');
   const [complexityFilter, setComplexityFilter] = useState('all');
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(MOCK_GRAPH_NODES[3]); // default to CheckoutService
+
+  const handleExportGraph = () => {
+    const data = {
+      project: selectedProject.name,
+      exportedAt: new Date().toISOString(),
+      nodes: filteredNodes,
+      edges: filteredEdges,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${selectedProject.name}_graph_topology.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showNotification({
+      title: 'Graph Exported',
+      message: `Downloaded topology with ${filteredNodes.length} nodes and ${filteredEdges.length} edges.`,
+      type: 'success',
+    });
+  };
 
   const filteredNodes = useMemo(() => {
     return MOCK_GRAPH_NODES.filter((node) => {
@@ -56,6 +80,7 @@ export const CodeMapView: React.FC = () => {
         onSelectComplexity={setComplexityFilter}
         nodesCount={filteredNodes.length}
         edgesCount={filteredEdges.length}
+        onExportGraph={handleExportGraph}
       />
 
       {/* Main Canvas & Details Panel Viewport */}

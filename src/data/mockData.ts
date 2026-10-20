@@ -818,6 +818,323 @@ async def health_check():
       },
     ],
   },
+  'app/api/orders.py': {
+    path: 'app/api/orders.py',
+    language: 'python',
+    linesCount: 45,
+    sizeFormatted: '5.4 KB',
+    lastModified: '2026-10-18 12:10:00',
+    content: `from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+from uuid import UUID
+from app.models.order import Order, OrderCreateRequest, OrderResponse
+from app.services.checkout_service import CheckoutService
+from app.core.dependencies import get_current_user, get_checkout_service
+
+router = APIRouter()
+
+@router.post("/checkout", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
+async def create_order_endpoint(
+    payload: OrderCreateRequest,
+    current_user = Depends(get_current_user),
+    service: CheckoutService = Depends(get_checkout_service),
+) -> OrderResponse:
+    """
+    Initiate checkout for authenticated customer.
+    Validates inventory stock and creates payment intent with idempotency.
+    """
+    order = await service.execute_checkout(
+        user_id=current_user.id,
+        items=payload.items,
+        payment_method_id=payload.payment_method_id,
+        idempotency_key=payload.idempotency_key,
+    )
+    return OrderResponse.from_orm(order)
+
+@router.get("/{order_id}", response_model=OrderResponse)
+async def get_order_by_id(
+    order_id: UUID,
+    current_user = Depends(get_current_user),
+) -> OrderResponse:
+    """Retrieve details and fulfillment state of an existing order."""
+    return OrderResponse(id=order_id, status="CONFIRMED")
+`,
+    symbols: [
+      {
+        id: 'sym-create-order-endpoint',
+        name: 'create_order_endpoint',
+        kind: 'function',
+        line: 11,
+        endLine: 28,
+        signature: 'async def create_order_endpoint(payload, current_user, service) -> OrderResponse',
+        docstring: 'Initiate checkout for authenticated customer.',
+        visibility: 'public',
+        referencesCount: 5,
+        complexityScore: 4,
+      },
+      {
+        id: 'sym-get-order-by-id',
+        name: 'get_order_by_id',
+        kind: 'function',
+        line: 30,
+        endLine: 36,
+        signature: 'async def get_order_by_id(order_id: UUID, current_user) -> OrderResponse',
+        docstring: 'Retrieve details and fulfillment state of an existing order.',
+        visibility: 'public',
+        referencesCount: 2,
+        complexityScore: 2,
+      },
+    ],
+  },
+  'app/api/auth.py': {
+    path: 'app/api/auth.py',
+    language: 'python',
+    linesCount: 38,
+    sizeFormatted: '4.2 KB',
+    lastModified: '2026-10-17 16:45:00',
+    content: `from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from app.core.security import verify_password, create_access_token
+from app.core.database import get_db_session
+
+router = APIRouter()
+
+@router.post("/token")
+async def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session = Depends(get_db_session),
+):
+    """Verify credentials and issue signed asymmetric JWT token."""
+    user = await authenticate_user(session, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+        )
+    access_token = create_access_token(data={"sub": str(user.id), "roles": user.roles})
+    return {"access_token": access_token, "token_type": "bearer"}
+`,
+    symbols: [
+      {
+        id: 'sym-login-for-access-token',
+        name: 'login_for_access_token',
+        kind: 'function',
+        line: 9,
+        endLine: 24,
+        signature: 'async def login_for_access_token(form_data, session) -> dict',
+        docstring: 'Verify credentials and issue signed asymmetric JWT token.',
+        visibility: 'public',
+        referencesCount: 4,
+        complexityScore: 3,
+      },
+    ],
+  },
+  'app/domain/pricing_rules.py': {
+    path: 'app/domain/pricing_rules.py',
+    language: 'python',
+    linesCount: 52,
+    sizeFormatted: '7.1 KB',
+    lastModified: '2026-10-18 09:20:00',
+    content: `from typing import List
+from dataclasses import dataclass
+from app.models.order import OrderItem
+
+@dataclass(frozen=True)
+class PriceSummary:
+    subtotal_cents: int
+    discount_cents: int
+    tax_cents: int
+    final_amount_cents: int
+
+class TaxAndDiscountEngine:
+    """Deterministic calculation of volume discounts and state tax rules."""
+
+    def calculate_total(self, items: List[OrderItem], state_code: str = "CA") -> PriceSummary:
+        subtotal = sum(item.price_cents * item.quantity for item in items)
+        
+        # Tiered volume discount
+        discount = 0
+        if subtotal > 10000:  # $100+
+            discount = int(subtotal * 0.10)
+        
+        taxable_amount = subtotal - discount
+        tax_rate = 0.0825 if state_code == "CA" else 0.05
+        tax = int(taxable_amount * tax_rate)
+
+        return PriceSummary(
+            subtotal_cents=subtotal,
+            discount_cents=discount,
+            tax_cents=tax,
+            final_amount_cents=taxable_amount + tax,
+        )
+`,
+    symbols: [
+      {
+        id: 'sym-pricing-engine',
+        name: 'TaxAndDiscountEngine',
+        kind: 'class',
+        line: 12,
+        endLine: 35,
+        signature: 'class TaxAndDiscountEngine',
+        docstring: 'Deterministic calculation of volume discounts and state tax rules.',
+        visibility: 'public',
+        referencesCount: 5,
+        complexityScore: 6,
+      },
+      {
+        id: 'sym-calc-total',
+        name: 'calculate_total',
+        kind: 'method',
+        line: 15,
+        endLine: 35,
+        signature: 'def calculate_total(self, items: List[OrderItem], state_code: str = "CA") -> PriceSummary',
+        visibility: 'public',
+        referencesCount: 4,
+        complexityScore: 4,
+      },
+    ],
+  },
+  'app/models/order.py': {
+    path: 'app/models/order.py',
+    language: 'python',
+    linesCount: 48,
+    sizeFormatted: '4.8 KB',
+    lastModified: '2026-10-17 11:30:00',
+    content: `from enum import Enum
+from uuid import UUID, uuid4
+from pydantic import BaseModel, Field
+from typing import List, Optional
+
+class OrderStatus(str, Enum):
+    PENDING_PAYMENT = "PENDING_PAYMENT"
+    CONFIRMED = "CONFIRMED"
+    CANCELLED = "CANCELLED"
+    SHIPPED = "SHIPPED"
+
+class OrderItem(BaseModel):
+    sku: str
+    quantity: int
+    price_cents: int
+
+class Order(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    user_id: UUID
+    status: OrderStatus = OrderStatus.PENDING_PAYMENT
+    total_cents: int
+    payment_intent_id: Optional[str] = None
+`,
+    symbols: [
+      {
+        id: 'sym-order-status',
+        name: 'OrderStatus',
+        kind: 'class',
+        line: 6,
+        endLine: 11,
+        signature: 'class OrderStatus(str, Enum)',
+        visibility: 'public',
+        referencesCount: 8,
+        complexityScore: 1,
+      },
+      {
+        id: 'sym-order',
+        name: 'Order',
+        kind: 'class',
+        line: 18,
+        endLine: 25,
+        signature: 'class Order(BaseModel)',
+        visibility: 'public',
+        referencesCount: 6,
+        complexityScore: 1,
+      },
+    ],
+  },
+  'tests/test_checkout.py': {
+    path: 'tests/test_checkout.py',
+    language: 'python',
+    linesCount: 42,
+    sizeFormatted: '6.1 KB',
+    lastModified: '2026-10-18 15:00:00',
+    content: `import pytest
+from uuid import uuid4
+from app.models.order import OrderItem, OrderStatus
+from app.services.checkout_service import CheckoutService
+
+@pytest.mark.asyncio
+async def test_successful_checkout_flow(mock_db, mock_inventory, mock_stripe):
+    """Verify standard happy path execution commits reservation and order."""
+    service = CheckoutService(
+        db_session=mock_db,
+        inventory_service=mock_inventory,
+        payment_gateway=mock_stripe,
+    )
+    items = [OrderItem(sku="SKU-881", quantity=2, price_cents=2500)]
+    order = await service.execute_checkout(
+        user_id=uuid4(),
+        items=items,
+        payment_method_id="pm_card_visa",
+        idempotency_key="test_nonce_99",
+    )
+    assert order.status == OrderStatus.CONFIRMED
+    assert mock_inventory.reserve_called_with_ttl == 300
+    assert mock_db.committed is True
+`,
+    symbols: [
+      {
+        id: 'sym-test-checkout-flow',
+        name: 'test_successful_checkout_flow',
+        kind: 'function',
+        line: 7,
+        endLine: 24,
+        signature: 'async def test_successful_checkout_flow(mock_db, mock_inventory, mock_stripe)',
+        docstring: 'Verify standard happy path execution commits reservation and order.',
+        visibility: 'public',
+        referencesCount: 1,
+        complexityScore: 2,
+      },
+    ],
+  },
+  'pyproject.toml': {
+    path: 'pyproject.toml',
+    language: 'toml',
+    linesCount: 30,
+    sizeFormatted: '2.1 KB',
+    lastModified: '2026-10-15 08:00:00',
+    content: `[project]
+name = "fastapi-microcommerce"
+version = "1.4.0"
+description = "High-performance asynchronous checkout microservice"
+dependencies = [
+    "fastapi>=0.110.1",
+    "pydantic>=2.7.0",
+    "sqlalchemy[asyncio]>=2.0.29",
+    "asyncpg>=0.29.0",
+    "redis>=5.0.3",
+    "stripe>=8.4.0",
+    "structlog>=24.1.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+`,
+    symbols: [],
+  },
+  'Dockerfile': {
+    path: 'Dockerfile',
+    language: 'dockerfile',
+    linesCount: 20,
+    sizeFormatted: '1.4 KB',
+    lastModified: '2026-10-14 19:12:00',
+    content: `FROM python:3.11-slim
+WORKDIR /app
+COPY pyproject.toml .
+RUN pip install --no-cache-dir .
+COPY app/ ./app/
+EXPOSE 8000
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+`,
+    symbols: [],
+  },
 };
 
 export const MOCK_CONVERSATIONS: Conversation[] = [

@@ -76,6 +76,22 @@ export const SourceViewer: React.FC<SourceViewerProps> = ({ fileDetails, activeS
           <Button
             variant="secondary"
             size="sm"
+            onClick={() => {
+              const blob = new Blob([fileDetails.content], { type: 'text/plain;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = fileDetails.path.split('/').pop() || 'source.py';
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            title="Download file"
+          >
+            Download
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={handleCopy}
             leftIcon={copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
           >

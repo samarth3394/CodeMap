@@ -13,6 +13,7 @@ import { useNotification } from '../../../context/NotificationContext';
 export const TestsView: React.FC = () => {
   const [suites] = useState<TestSuite[]>(MOCK_TEST_SUITES);
   const [activeSuiteId, setActiveSuiteId] = useState<string>(MOCK_TEST_SUITES[0].id);
+  const [isRunningTests, setIsRunningTests] = useState(false);
   const { showNotification } = useNotification();
 
   const activeSuite = suites.find((s) => s.id === activeSuiteId) || suites[0];
@@ -22,11 +23,15 @@ export const TestsView: React.FC = () => {
   const totalFailed = suites.reduce((acc, s) => acc + s.failed, 0);
 
   const handleRunTests = () => {
-    showNotification({
-      title: 'Test Suite Executed (Demo)',
-      message: `Executed ${totalTests} test cases across 2 suites in 3.2s.`,
-      type: 'info',
-    });
+    setIsRunningTests(true);
+    setTimeout(() => {
+      setIsRunningTests(false);
+      showNotification({
+        title: 'PyTest Suite Executed (Demo)',
+        message: `Executed ${totalTests} test cases across 2 suites: ${totalPassed} passed, ${totalFailed} failed.`,
+        type: 'success',
+      });
+    }, 1200);
   };
 
   return (
@@ -49,6 +54,7 @@ export const TestsView: React.FC = () => {
           variant="primary"
           size="sm"
           onClick={handleRunTests}
+          isLoading={isRunningTests}
           leftIcon={<Play className="w-3.5 h-3.5" />}
         >
           Run Test Suites (Demo)

@@ -32,6 +32,8 @@ export const Header: React.FC<{ onToggleMobileMenu: () => void }> = ({ onToggleM
 
   const branches = ['main', 'develop', 'feat/async-reservation', 'v1.4-hotfix'];
 
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
   return (
     <header className="sticky top-0 z-30 flex h-14 w-full items-center justify-between border-b border-slate-200 bg-white px-4">
       {/* Left: Brand & Mobile Toggle */}
@@ -208,9 +210,62 @@ export const Header: React.FC<{ onToggleMobileMenu: () => void }> = ({ onToggleM
           <span className="sm:hidden">New</span>
         </Button>
 
-        {/* User profile / demo avatar */}
-        <div className="h-8 w-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center font-semibold text-xs text-slate-700">
-          AR
+        {/* User profile / demo avatar with working dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center justify-center font-semibold text-xs text-slate-700 transition-colors focus-ring"
+            aria-label="User account menu"
+          >
+            AR
+          </button>
+
+          {isProfileMenuOpen && (
+            <div
+              className="absolute right-0 mt-2 w-56 rounded-xl bg-white p-2 shadow-dropdown border border-slate-200 z-50 animate-in fade-in zoom-in-95 duration-100"
+              onMouseLeave={() => setIsProfileMenuOpen(false)}
+            >
+              <div className="px-3 py-2 border-b border-slate-100">
+                <div className="text-xs font-semibold text-slate-900">Alex Rivera</div>
+                <div className="text-[11px] text-slate-500">Lead Staff Architect</div>
+              </div>
+
+              <div className="py-1 space-y-0.5">
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    navigate('/dashboard');
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
+                >
+                  Workspace Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    openPalette();
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg flex items-center justify-between transition-colors"
+                >
+                  <span>Command Palette</span>
+                  <kbd className="text-[10px] bg-slate-100 px-1 rounded border border-slate-200">⌘K</kbd>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    setIsProjectModalOpen(true);
+                  }}
+                  className="w-full text-left px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors"
+                >
+                  + Create New Project
+                </button>
+              </div>
+
+              <div className="border-t border-slate-100 pt-1 mt-1 px-3 py-1.5 text-[10px] text-slate-400">
+                CodeMap Stage 1 Prototype
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

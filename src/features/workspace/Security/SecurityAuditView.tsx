@@ -1,16 +1,54 @@
 import React, { useState } from 'react';
 import { MOCK_SECURITY_FINDINGS } from '../../../data/mockData';
 import { SecurityVulnerability } from '../../../types/analysis';
+import { Button } from '../../../components/common/Button';
 import { Badge } from '../../../components/common/Badge';
 import {
   ShieldCheck,
   FileCode,
+  RefreshCw,
+  Download,
 } from 'lucide-react';
 import { useNotification } from '../../../context/NotificationContext';
 
 export const SecurityAuditView: React.FC = () => {
   const [findings, setFindings] = useState<SecurityVulnerability[]>(MOCK_SECURITY_FINDINGS);
+  const [isScanning, setIsScanning] = useState(false);
   const { showNotification } = useNotification();
+
+  const handleRunScan = () => {
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      showNotification({
+        title: 'SAST Audit Complete',
+        message: 'Scanned 142 files. 0 critical, 1 medium advisory, 1 low advisory detected.',
+        type: 'success',
+      });
+    }, 1500);
+  };
+
+  const handleExportReport = () => {
+    const report = {
+      auditTimestamp: new Date().toISOString(),
+      findingsCount: findings.length,
+      securityScore: 94,
+      findings,
+    };
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CodeMap_Security_Audit.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showNotification({
+      title: 'Report Downloaded',
+      message: 'Exported security audit JSON report.',
+      type: 'info',
+    });
+  };
 
   const handleUpdateStatus = (id: string, newStatus: SecurityVulnerability['status']) => {
     setFindings((prev) =>
@@ -45,9 +83,26 @@ export const SecurityAuditView: React.FC = () => {
             Static security analysis for CWE vulnerabilities, permissive policies, and secret exposure.
           </p>
         </div>
-        <Badge variant="emerald" size="md">
-          Zero Critical Advisories
-        </Badge>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportReport}
+            leftIcon={<Download className="w-3.5 h-3.5" />}
+          >
+            Export Report
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleRunScan}
+            isLoading={isScanning}
+            leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+          >
+            Run SAST Scan (Demo)
+          </Button>
+        </div>
       </div>
 
       {/* Findings List */}

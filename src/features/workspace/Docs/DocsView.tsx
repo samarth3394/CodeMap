@@ -2,7 +2,7 @@ import React from 'react';
 import { MOCK_DOC_SECTIONS } from '../../../data/mockData';
 import { Button } from '../../../components/common/Button';
 import { Badge } from '../../../components/common/Badge';
-import { BookOpen, RefreshCw, FileCode } from 'lucide-react';
+import { BookOpen, RefreshCw, FileCode, Download } from 'lucide-react';
 import { useNotification } from '../../../context/NotificationContext';
 
 export const DocsView: React.FC = () => {
@@ -13,6 +13,43 @@ export const DocsView: React.FC = () => {
       title: 'Docs Regenerated (Demo)',
       message: 'Synthesized latest AST docstrings and endpoints from source files.',
       type: 'success',
+    });
+  };
+
+  const handleExportMarkdown = () => {
+    const mdContent = `# CodeMap Living Architecture Documentation
+Generated: ${new Date().toLocaleString()}
+
+${MOCK_DOC_SECTIONS.map(
+  (sec) => `## ${sec.title}
+**Module Path**: \`${sec.modulePath}\`
+*Last Updated: ${sec.lastGenerated}*
+
+### Summary
+${sec.summary}
+
+### Architecture Notes
+\`\`\`
+${sec.architectureNotes}
+\`\`\`
+
+### Endpoints & Public Interfaces
+${sec.endpointsOrInterfaces.map((item) => `- **\`${item.name}\`**: \`${item.signature}\`\n  ${item.description}`).join('\n')}
+`
+).join('\n---\n\n')}`;
+
+    const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CodeMap_Architecture_Docs.md';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showNotification({
+      title: 'Markdown Downloaded',
+      message: 'Saved CodeMap_Architecture_Docs.md to your downloads.',
+      type: 'info',
     });
   };
 
@@ -32,14 +69,24 @@ export const DocsView: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={handleRegenerate}
-          leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-        >
-          Regenerate Docs (Demo)
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleExportMarkdown}
+            leftIcon={<Download className="w-3.5 h-3.5" />}
+          >
+            Export Markdown
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleRegenerate}
+            leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+          >
+            Regenerate Docs (Demo)
+          </Button>
+        </div>
       </div>
 
       {/* Docs Sections */}
