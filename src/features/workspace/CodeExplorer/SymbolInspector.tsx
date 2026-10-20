@@ -1,13 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CodeSymbol } from '../../../types/explorer';
 import { Badge } from '../../../components/common/Badge';
-import { Layers, FunctionSquare, Variable, Zap, Code2 } from 'lucide-react';
+import { Button } from '../../../components/common/Button';
+import { Layers, FunctionSquare, Variable, Zap, Code2, Bot } from 'lucide-react';
 
 interface SymbolInspectorProps {
   symbols: CodeSymbol[];
   activeSymbolId: string | null;
   onSelectSymbol: (symbol: CodeSymbol) => void;
   fileName: string;
+  projectId?: string;
 }
 
 export const SymbolInspector: React.FC<SymbolInspectorProps> = ({
@@ -15,7 +18,9 @@ export const SymbolInspector: React.FC<SymbolInspectorProps> = ({
   activeSymbolId,
   onSelectSymbol,
   fileName,
+  projectId = 'proj-fastapi-commerce',
 }) => {
+  const navigate = useNavigate();
   const getKindIcon = (kind: CodeSymbol['kind']) => {
     switch (kind) {
       case 'class':
@@ -94,6 +99,52 @@ export const SymbolInspector: React.FC<SymbolInspectorProps> = ({
           })
         )}
       </div>
+
+      {/* Symbol Quick Action Footer */}
+      {(() => {
+        const activeSym = symbols.find((s) => s.id === activeSymbolId);
+        if (!activeSym) return null;
+        return (
+          <div className="p-3 border-t border-slate-200 bg-slate-50/90 space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700">
+              <span>Selected AST Symbol:</span>
+              <span className="font-mono text-blue-600 truncate max-w-[130px]">
+                {activeSym.name}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  navigate(
+                    `/projects/${projectId}/ai?query=${encodeURIComponent(
+                      `Explain the implementation and caller contracts for ${activeSym.name} in ${fileName}`
+                    )}`
+                  )
+                }
+                leftIcon={<Bot className="w-3.5 h-3.5" />}
+              >
+                Ask AI
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() =>
+                  navigate(
+                    `/projects/${projectId}/impact?symbol=${encodeURIComponent(
+                      activeSym.name
+                    )}`
+                  )
+                }
+                leftIcon={<Zap className="w-3.5 h-3.5" />}
+              >
+                Impact
+              </Button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };

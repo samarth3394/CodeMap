@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useProject } from '../../../context/ProjectContext';
 import {
   MOCK_CONVERSATIONS,
@@ -13,6 +13,10 @@ import { Bot, Plus } from 'lucide-react';
 
 export const AIAssistantView: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const [searchParams] = useSearchParams();
+  const incomingQuery = searchParams.get('query');
+  const processedQueryRef = useRef<string | null>(null);
+
   const { selectedProject } = useProject();
 
   const [conversations, setConversations] = useState<Conversation[]>(MOCK_CONVERSATIONS);
@@ -118,6 +122,13 @@ Based on the parsed AST hierarchy in [\`app/services/checkout_service.py\`](file
       setIsGenerating(false);
     }, 1200);
   };
+
+  useEffect(() => {
+    if (incomingQuery && incomingQuery !== processedQueryRef.current) {
+      processedQueryRef.current = incomingQuery;
+      handleSendMessage(incomingQuery);
+    }
+  }, [incomingQuery]);
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] w-full overflow-hidden bg-white">

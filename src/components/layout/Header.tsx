@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useProject } from '../../context/ProjectContext';
 import { useCommandPalette } from '../../context/CommandPaletteContext';
 import { Button } from '../common/Button';
@@ -26,6 +26,7 @@ export const Header: React.FC<{ onToggleMobileMenu: () => void }> = ({ onToggleM
   } = useProject();
   const { openPalette } = useCommandPalette();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
@@ -91,7 +92,9 @@ export const Header: React.FC<{ onToggleMobileMenu: () => void }> = ({ onToggleM
                     onClick={() => {
                       selectProjectById(proj.id);
                       setIsProjectDropdownOpen(false);
-                      navigate(`/projects/${proj.id}/overview`);
+                      const pathParts = location.pathname.split('/');
+                      const currentTab = pathParts[1] === 'projects' && pathParts[3] ? pathParts[3] : 'overview';
+                      navigate(`/projects/${proj.id}/${currentTab}`);
                     }}
                     className={`w-full flex items-center justify-between px-2.5 py-2 text-xs rounded-lg text-left transition-colors ${
                       isSelected

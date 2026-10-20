@@ -107,7 +107,11 @@ export const ChatThread: React.FC<ChatThreadProps> = ({
                       {msg.references.map((ref, idx) => (
                         <button
                           key={idx}
-                          onClick={() => navigate(`/projects/${projectId}/explorer`)}
+                          onClick={() =>
+                            navigate(
+                              `/projects/${projectId}/explorer?file=${encodeURIComponent(ref.path)}`
+                            )
+                          }
                           className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-white border border-slate-200 text-[11px] font-mono text-blue-700 hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
                         >
                           <FileCode className="w-3 h-3 text-blue-600" />

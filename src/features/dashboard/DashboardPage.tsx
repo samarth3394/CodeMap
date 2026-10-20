@@ -280,13 +280,30 @@ export const DashboardPage: React.FC = () => {
                 index: <Layers className="w-3.5 h-3.5 text-indigo-600" />,
               };
 
+              const getTargetUrl = () => {
+                switch (act.type) {
+                  case 'impact_analysis': return `/projects/${act.projectId}/impact`;
+                  case 'security_scan': return `/projects/${act.projectId}/security`;
+                  case 'ai_query': return `/projects/${act.projectId}/ai`;
+                  case 'git_sync': return `/projects/${act.projectId}/history`;
+                  default: return `/projects/${act.projectId}/overview`;
+                }
+              };
+
               return (
-                <div key={act.id} className="flex items-start gap-3 text-xs pb-3 border-b border-slate-100 last:border-0 last:pb-0">
-                  <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 mt-0.5">
+                <div
+                  key={act.id}
+                  onClick={() => {
+                    selectProjectById(act.projectId);
+                    navigate(getTargetUrl());
+                  }}
+                  className="flex items-start gap-3 text-xs p-2 -mx-2 rounded-lg hover:bg-slate-50 border-b border-slate-100 last:border-0 cursor-pointer transition-colors group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200 group-hover:border-blue-300 flex items-center justify-center shrink-0 mt-0.5 transition-colors">
                     {icons[act.type]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-slate-800 leading-normal">
+                    <p className="text-slate-800 leading-normal group-hover:text-blue-900 transition-colors">
                       <span className="font-semibold text-slate-900">{act.projectName}</span>:{' '}
                       {act.description}
                     </p>
@@ -296,6 +313,7 @@ export const DashboardPage: React.FC = () => {
                       <span>{act.timestamp}</span>
                     </div>
                   </div>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all shrink-0 mt-1" />
                 </div>
               );
             })}

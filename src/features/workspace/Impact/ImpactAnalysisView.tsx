@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { MOCK_IMPACT_PROPOSALS } from '../../../data/mockData';
 import { ImpactChangeProposal } from '../../../types/analysis';
 import { Button } from '../../../components/common/Button';
@@ -11,10 +12,16 @@ import {
   FileCode,
   Play,
   Plus,
+  ArrowRight,
 } from 'lucide-react';
 import { useNotification } from '../../../context/NotificationContext';
 
 export const ImpactAnalysisView: React.FC = () => {
+  const { projectId } = useParams<{ projectId: string }>();
+  const [searchParams] = useSearchParams();
+  const incomingSymbol = searchParams.get('symbol');
+  const navigate = useNavigate();
+
   const [proposals, setProposals] = useState<ImpactChangeProposal[]>(MOCK_IMPACT_PROPOSALS);
   const [selectedPropId, setSelectedPropId] = useState<string>(MOCK_IMPACT_PROPOSALS[0].id);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,6 +30,21 @@ export const ImpactAnalysisView: React.FC = () => {
   const [newFile, setNewFile] = useState('app/services/inventory_service.py');
   const [newRisk, setNewRisk] = useState<'low' | 'medium' | 'high'>('medium');
   const { showNotification } = useNotification();
+
+  useEffect(() => {
+    if (incomingSymbol) {
+      const existing = proposals.find((p) =>
+        p.targetSymbol.toLowerCase().includes(incomingSymbol.toLowerCase())
+      );
+      if (existing) {
+        setSelectedPropId(existing.id);
+      } else {
+        setNewTarget(incomingSymbol);
+        setNewTitle(`Simulate ${incomingSymbol}() blast radius`);
+        setIsModalOpen(true);
+      }
+    }
+  }, [incomingSymbol]);
 
   const selectedProposal =
     proposals.find((p) => p.id === selectedPropId) || proposals[0];
@@ -186,19 +208,29 @@ export const ImpactAnalysisView: React.FC = () => {
                 {selectedProposal.impactedFiles.map((file, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1.5"
+                    onClick={() =>
+                      navigate(
+                        `/projects/${projectId || 'proj-fastapi-commerce'}/explorer?file=${encodeURIComponent(
+                          file.path
+                        )}`
+                      )
+                    }
+                    className="p-3 bg-slate-50 hover:bg-white border border-slate-200 hover:border-blue-300 rounded-lg text-xs space-y-1.5 cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 font-mono text-slate-900 font-semibold">
+                      <div className="flex items-center gap-2 font-mono text-slate-900 group-hover:text-blue-600 font-semibold transition-colors">
                         <FileCode className="w-3.5 h-3.5 text-blue-600" />
                         <span>{file.path}</span>
                       </div>
-                      <Badge
-                        variant={file.riskLevel === 'direct' ? 'rose' : 'amber'}
-                        size="sm"
-                      >
-                        {file.riskLevel} caller
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant={file.riskLevel === 'direct' ? 'rose' : 'amber'}
+                          size="sm"
+                        >
+                          {file.riskLevel} caller
+                        </Badge>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all" />
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap gap-1.5 pt-1">
@@ -225,7 +257,10 @@ export const ImpactAnalysisView: React.FC = () => {
                 {selectedProposal.impactedTests.map((t, idx) => (
                   <div
                     key={idx}
-                    className="p-2.5 bg-amber-50/50 border border-amber-200 rounded-lg text-xs flex items-center justify-between"
+                    onClick={() =>
+                      navigate(`/projects/${projectId || 'proj-fastapi-commerce'}/tests`)
+                    }
+                    className="p-2.5 bg-amber-50/50 hover:bg-amber-50 border border-amber-200 hover:border-amber-300 rounded-lg text-xs flex items-center justify-between cursor-pointer transition-colors group"
                   >
                     <div className="flex items-center gap-2 font-mono text-amber-900">
                       <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
@@ -233,9 +268,12 @@ export const ImpactAnalysisView: React.FC = () => {
                       <span className="text-slate-400 font-sans">::</span>
                       <span className="font-semibold">{t.testName}</span>
                     </div>
-                    <Badge variant="amber" size="sm">
-                      Must Update Test
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="amber" size="sm">
+                        Must Update Test
+                      </Badge>
+                      <ArrowRight className="w-3.5 h-3.5 text-amber-500 opacity-0 group-hover:opacity-100 transition-all" />
+                    </div>
                   </div>
                 ))}
               </div>

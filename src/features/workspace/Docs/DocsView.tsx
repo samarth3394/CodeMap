@@ -1,11 +1,14 @@
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { MOCK_DOC_SECTIONS } from '../../../data/mockData';
 import { Button } from '../../../components/common/Button';
 import { Badge } from '../../../components/common/Badge';
-import { BookOpen, RefreshCw, FileCode, Download } from 'lucide-react';
+import { BookOpen, RefreshCw, FileCode, Download, ArrowRight } from 'lucide-react';
 import { useNotification } from '../../../context/NotificationContext';
 
 export const DocsView: React.FC = () => {
+  const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const { showNotification } = useNotification();
 
   const handleRegenerate = () => {
@@ -99,10 +102,20 @@ ${sec.endpointsOrInterfaces.map((item) => `- **\`${item.name}\`**: \`${item.sign
             <div className="flex items-start justify-between pb-3 border-b border-slate-100">
               <div>
                 <h2 className="text-base font-bold text-slate-900">{section.title}</h2>
-                <div className="flex items-center gap-2 font-mono text-xs text-blue-600 mt-1">
+                <button
+                  onClick={() =>
+                    navigate(
+                      `/projects/${projectId || 'proj-fastapi-commerce'}/explorer?file=${encodeURIComponent(
+                        section.modulePath
+                      )}`
+                    )
+                  }
+                  className="flex items-center gap-2 font-mono text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 transition-colors group"
+                >
                   <FileCode className="w-3.5 h-3.5" />
                   <span>{section.modulePath}</span>
-                </div>
+                  <ArrowRight className="w-3 h-3 text-blue-500 opacity-0 group-hover:opacity-100 transition-all ml-0.5" />
+                </button>
               </div>
               <Badge variant="slate" size="sm">
                 Generated {section.lastGenerated}

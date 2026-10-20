@@ -163,7 +163,15 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
           variant="primary"
           size="sm"
           className="w-full"
-          onClick={() => navigate(`/projects/${projectId}/explorer`)}
+          onClick={() =>
+            navigate(
+              `/projects/${projectId}/explorer?file=${encodeURIComponent(
+                node.path === 'app/services/order_service.py'
+                  ? 'app/services/checkout_service.py'
+                  : node.path
+              )}`
+            )
+          }
           leftIcon={<FileCode className="w-3.5 h-3.5" />}
         >
           Inspect in Explorer
@@ -172,7 +180,13 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => navigate(`/projects/${projectId}/ai`)}
+            onClick={() =>
+              navigate(
+                `/projects/${projectId}/ai?query=${encodeURIComponent(
+                  `Explain the architecture, callers, and dependencies of ${node.name}`
+                )}`
+              )
+            }
             leftIcon={<Bot className="w-3.5 h-3.5" />}
           >
             Ask AI
@@ -180,7 +194,11 @@ export const NodeDetailPanel: React.FC<NodeDetailPanelProps> = ({
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => navigate(`/projects/${projectId}/impact`)}
+            onClick={() =>
+              navigate(
+                `/projects/${projectId}/impact?symbol=${encodeURIComponent(node.name)}`
+              )
+            }
             leftIcon={<Zap className="w-3.5 h-3.5" />}
           >
             Impact

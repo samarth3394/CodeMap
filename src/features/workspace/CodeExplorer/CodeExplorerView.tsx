@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams, useParams } from 'react-router-dom';
 import { MOCK_FILE_TREE, MOCK_FILE_CONTENT } from '../../../data/mockData';
 import { CodeSymbol } from '../../../types/explorer';
 import { FileTree } from './FileTree';
@@ -6,10 +7,35 @@ import { SourceViewer } from './SourceViewer';
 import { SymbolInspector } from './SymbolInspector';
 
 export const CodeExplorerView: React.FC = () => {
-  const [selectedFilePath, setSelectedFilePath] = useState('app/services/checkout_service.py');
+  const [searchParams] = useSearchParams();
+  const { projectId } = useParams<{ projectId: string }>();
+  const queryFile = searchParams.get('file');
+
+  const defaultFile =
+    queryFile && MOCK_FILE_CONTENT[queryFile]
+      ? queryFile
+      : 'app/services/checkout_service.py';
+
+  const [selectedFilePath, setSelectedFilePath] = useState(defaultFile);
   const [activeSymbol, setActiveSymbol] = useState<CodeSymbol | null>(
-    MOCK_FILE_CONTENT['app/services/checkout_service.py'].symbols[0]
+    MOCK_FILE_CONTENT[defaultFile]?.symbols[0] || null
   );
+
+  useEffect(() => {
+    if (queryFile) {
+      // Find exact or partial match
+      const matched = Object.keys(MOCK_FILE_CONTENT).find(
+        (k) => k === queryFile || k.endsWith(queryFile) || queryFile.endsWith(k)
+      );
+      if (matched) {
+        setSelectedFilePath(matched);
+        const content = MOCK_FILE_CONTENT[matched];
+        if (content && content.symbols.length > 0) {
+          setActiveSymbol(content.symbols[0]);
+        }
+      }
+    }
+  }, [queryFile]);
 
   const fileDetails =
     MOCK_FILE_CONTENT[selectedFilePath] ||
@@ -43,6 +69,7 @@ export const CodeExplorerView: React.FC = () => {
         activeSymbolId={activeSymbol?.id || null}
         onSelectSymbol={setActiveSymbol}
         fileName={selectedFilePath.split('/').pop() || selectedFilePath}
+        projectId={projectId || 'proj-fastapi-commerce'}
       />
     </div>
   );

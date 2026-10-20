@@ -32,6 +32,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="/projects/:projectId/codemap" element={<CodeMapView />} />
         <Route path="/projects/:projectId/explorer" element={<CodeExplorerView />} />
         <Route path="/projects/:projectId/ai" element={<AIAssistantView />} />
+        <Route path="/projects/:projectId/assistant" element={<Navigate to="../ai" replace />} />
         <Route path="/projects/:projectId/dependencies" element={<DependenciesView />} />
         <Route path="/projects/:projectId/impact" element={<ImpactAnalysisView />} />
         <Route path="/projects/:projectId/tests" element={<TestsView />} />
