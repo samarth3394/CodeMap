@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { LiveCodeGraphPlayground } from './LiveCodeGraphPlayground';
+import { BentoGridFeatures } from './BentoGridFeatures';
 import {
   Compass,
   ArrowRight,
@@ -424,6 +425,9 @@ export const LandingPage: React.FC = () => {
       <div id="playground">
         <LiveCodeGraphPlayground />
       </div>
+
+      {/* Modern Bento Grid Features Section */}
+      <BentoGridFeatures />
 
       {/* Product Preview Section — Expansive Interactive Explorer */}
       <section id="preview" className="py-20 bg-white border-b border-slate-200">
