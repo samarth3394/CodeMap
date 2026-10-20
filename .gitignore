@@ -39,6 +39,9 @@ ENV/
 *.sqlite
 *.sqlite3
 storage_repos/
-backend/.env
-!backend/.env.example
+.env
+.env.*
+*.env
+*.env.*
+backend/.env*
 
