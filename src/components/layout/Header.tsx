@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useProject } from '../../context/ProjectContext';
+import { useAuth } from '../../context/AuthContext';
 import { useCommandPalette } from '../../context/CommandPaletteContext';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
@@ -13,6 +14,9 @@ import {
   Menu,
   Check,
   Code2,
+  LogOut,
+  LogIn,
+  User as UserIcon,
 } from 'lucide-react';
 
 export const Header: React.FC<{ onToggleMobileMenu: () => void }> = ({ onToggleMobileMenu }) => {
@@ -24,6 +28,7 @@ export const Header: React.FC<{ onToggleMobileMenu: () => void }> = ({ onToggleM
     selectProjectById,
     setIsProjectModalOpen,
   } = useProject();
+  const { user, isAuthenticated, openAuthModal, logout } = useAuth();
   const { openPalette } = useCommandPalette();
   const navigate = useNavigate();
   const location = useLocation();
@@ -213,63 +218,95 @@ export const Header: React.FC<{ onToggleMobileMenu: () => void }> = ({ onToggleM
           <span className="sm:hidden">New</span>
         </Button>
 
-        {/* User profile / demo avatar with working dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            className="h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center justify-center font-semibold text-xs text-slate-700 transition-colors focus-ring"
-            aria-label="User account menu"
+        {/* User profile / Auth button */}
+        {!isAuthenticated ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => openAuthModal('login')}
+            leftIcon={<LogIn className="w-3.5 h-3.5" />}
           >
-            AR
-          </button>
-
-          {isProfileMenuOpen && (
-            <div
-              className="absolute right-0 mt-2 w-56 rounded-xl bg-white p-2 shadow-dropdown border border-slate-200 z-50 animate-in fade-in zoom-in-95 duration-100"
-              onMouseLeave={() => setIsProfileMenuOpen(false)}
+            Sign In
+          </Button>
+        ) : (
+          <div className="relative">
+            <button
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="h-8 w-8 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center justify-center font-bold text-xs text-blue-700 transition-colors focus-ring"
+              aria-label="User account menu"
             >
-              <div className="px-3 py-2 border-b border-slate-100">
-                <div className="text-xs font-semibold text-slate-900">Alex Rivera</div>
-                <div className="text-[11px] text-slate-500">Lead Staff Architect</div>
-              </div>
+              {user?.full_name
+                ? user.full_name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')
+                    .slice(0, 2)
+                    .toUpperCase()
+                : 'U'}
+            </button>
 
-              <div className="py-1 space-y-0.5">
-                <button
-                  onClick={() => {
-                    setIsProfileMenuOpen(false);
-                    navigate('/dashboard');
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
-                >
-                  Workspace Dashboard
-                </button>
-                <button
-                  onClick={() => {
-                    setIsProfileMenuOpen(false);
-                    openPalette();
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg flex items-center justify-between transition-colors"
-                >
-                  <span>Command Palette</span>
-                  <kbd className="text-[10px] bg-slate-100 px-1 rounded border border-slate-200">⌘K</kbd>
-                </button>
-                <button
-                  onClick={() => {
-                    setIsProfileMenuOpen(false);
-                    setIsProjectModalOpen(true);
-                  }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors"
-                >
-                  + Create New Project
-                </button>
-              </div>
+            {isProfileMenuOpen && (
+              <div
+                className="absolute right-0 mt-2 w-56 rounded-xl bg-white p-2 shadow-dropdown border border-slate-200 z-50 animate-in fade-in zoom-in-95 duration-100"
+                onMouseLeave={() => setIsProfileMenuOpen(false)}
+              >
+                <div className="px-3 py-2 border-b border-slate-100">
+                  <div className="text-xs font-semibold text-slate-900 truncate">
+                    {user?.full_name || 'Authenticated User'}
+                  </div>
+                  <div className="text-[11px] text-slate-500 truncate">{user?.email}</div>
+                </div>
 
-              <div className="border-t border-slate-100 pt-1 mt-1 px-3 py-1.5 text-[10px] text-slate-400">
-                CodeMap Stage 1 Prototype
+                <div className="py-1 space-y-0.5">
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      navigate('/dashboard');
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <UserIcon className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Workspace Dashboard</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      openPalette();
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-xs text-slate-700 hover:bg-slate-50 rounded-lg flex items-center justify-between transition-colors"
+                  >
+                    <span>Command Palette</span>
+                    <kbd className="text-[10px] bg-slate-100 px-1 rounded border border-slate-200">
+                      ⌘K
+                    </kbd>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      setIsProjectModalOpen(true);
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors"
+                  >
+                    + Create New Project
+                  </button>
+                </div>
+
+                <div className="border-t border-slate-100 pt-1 mt-1">
+                  <button
+                    onClick={async () => {
+                      setIsProfileMenuOpen(false);
+                      await logout();
+                    }}
+                    className="w-full text-left px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 font-medium rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-rose-500" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

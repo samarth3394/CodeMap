@@ -116,9 +116,9 @@ export const ProjectSettingsView: React.FC = () => {
             type="button"
             variant="danger"
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               if (window.confirm(`Are you sure you want to remove ${selectedProject.name} from the workspace?`)) {
-                const deleted = deleteProject(selectedProject.id);
+                const deleted = await deleteProject(selectedProject.id);
                 if (deleted) {
                   navigate('/dashboard');
                 }
