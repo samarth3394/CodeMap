@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
+import { LiveCodeGraphPlayground } from './LiveCodeGraphPlayground';
 import {
   Compass,
   ArrowRight,
@@ -125,6 +126,10 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+            <a href="#playground" className="hover:text-blue-600 font-semibold transition-colors flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+              Live Playground
+            </a>
             <a href="#preview" className="hover:text-slate-900 transition-colors">
               Product Tour
             </a>
@@ -414,6 +419,11 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Interactive Live Code vs Graph Topology Playground */}
+      <div id="playground">
+        <LiveCodeGraphPlayground />
+      </div>
 
       {/* Product Preview Section — Expansive Interactive Explorer */}
       <section id="preview" className="py-20 bg-white border-b border-slate-200">
