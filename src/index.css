@@ -51,28 +51,44 @@
   }
 }
 
-@keyframes blurTextSpin {
+@keyframes blurSpinIn {
   0% {
-    filter: blur(10px);
+    filter: blur(12px);
     opacity: 0;
-    transform: translateY(14px) rotateX(-25deg);
+    transform: translateY(22px) rotateX(-25deg);
   }
-  15%, 85% {
+  100% {
+    filter: blur(0px);
+    opacity: 1;
+    transform: translateY(0px) rotateX(0deg);
+  }
+}
+
+@keyframes blurSpinOut {
+  0% {
     filter: blur(0px);
     opacity: 1;
     transform: translateY(0px) rotateX(0deg);
   }
   100% {
-    filter: blur(10px);
+    filter: blur(12px);
     opacity: 0;
-    transform: translateY(-14px) rotateX(25deg);
+    transform: translateY(-22px) rotateX(25deg);
   }
 }
 
-.animate-blur-text {
+.text-blur-in {
   display: inline-block;
-  animation: blurTextSpin 2.6s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  animation: blurSpinIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transform-origin: center center;
+  will-change: transform, filter, opacity;
+}
+
+.text-blur-out {
+  display: inline-block;
+  animation: blurSpinOut 0.45s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+  transform-origin: center center;
+  will-change: transform, filter, opacity;
 }
 
 @keyframes spinSlow {

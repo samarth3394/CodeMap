@@ -27,7 +27,7 @@ export const LandingPage: React.FC = () => {
   const [copiedCli, setCopiedCli] = useState(false);
   const [activeHeroNode, setActiveHeroNode] = useState<string>('service');
 
-  // Dynamic Animated Spinning/Blur Words
+  // Dynamic Animated Spinning/Blur Words with smooth 4s pacing
   const rotatingWords = [
     'Complex Microservices',
     'Distributed Systems',
@@ -35,12 +35,23 @@ export const LandingPage: React.FC = () => {
     'Blast Radius Risks',
     'Legacy Monoliths',
   ];
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [displayWord, setDisplayWord] = useState(rotatingWords[0]);
+  const [animClass, setAnimClass] = useState<'text-blur-in' | 'text-blur-out'>('text-blur-in');
 
   useEffect(() => {
+    let wordIdx = 0;
     const interval = setInterval(() => {
-      setCurrentWordIndex((prev) => (prev + 1) % rotatingWords.length);
-    }, 2800);
+      // 1. Smoothly blur and spin out upward (450ms)
+      setAnimClass('text-blur-out');
+
+      // 2. Switch word and spin in from below smoothly (650ms)
+      setTimeout(() => {
+        wordIdx = (wordIdx + 1) % rotatingWords.length;
+        setDisplayWord(rotatingWords[wordIdx]);
+        setAnimClass('text-blur-in');
+      }, 450);
+    }, 4000);
+
     return () => clearInterval(interval);
   }, [rotatingWords.length]);
 
@@ -173,14 +184,14 @@ export const LandingPage: React.FC = () => {
               </div>
 
               {/* Dynamic Headline with Animated Rotating Blur-Spin Text */}
-              <h1 className="text-4xl sm:text-5xl xl:text-6xl font-bold tracking-tight text-slate-900 leading-[1.12]">
-                Architectural clarity for <br />
-                <span className="perspective-1000 inline-block h-[1.25em] overflow-visible align-top">
+              <h1 className="text-4xl sm:text-5xl xl:text-6xl font-bold tracking-tight text-slate-900 leading-[1.18]">
+                Architectural clarity for
+                <span className="block mt-2 sm:mt-3 perspective-1000 min-h-[1.3em]">
                   <span
-                    key={currentWordIndex}
-                    className="text-blue-600 animate-blur-text font-extrabold"
+                    key={displayWord}
+                    className={`text-blue-600 font-extrabold inline-block pb-1 ${animClass}`}
                   >
-                    {rotatingWords[currentWordIndex]}
+                    {displayWord}
                   </span>
                 </span>
               </h1>
