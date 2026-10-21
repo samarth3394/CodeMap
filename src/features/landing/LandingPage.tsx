@@ -643,9 +643,9 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Feature Cards Section — Full 3x2 Grid */}
-      <section id="features" className="py-20 bg-slate-50/70 border-b border-slate-200">
+      <section id="capabilities" className="py-20 bg-slate-50/70 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="text-left max-w-3xl mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
               Engineered for staff engineers, tech leads, and architects
             </h2>
@@ -733,7 +733,7 @@ export const LandingPage: React.FC = () => {
       {/* Comparison Matrix Section */}
       <section id="comparison" className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="text-left max-w-3xl mb-14">
             <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
               Why leading engineering teams choose CodeMap
             </h2>
@@ -789,7 +789,7 @@ export const LandingPage: React.FC = () => {
       {/* How It Works Section */}
       <section id="how-it-works" className="py-20 bg-slate-50 border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
+          <div className="text-left max-w-3xl mb-14">
             <h2 className="text-3xl font-bold text-slate-900 tracking-tight">How CodeMap works</h2>
             <p className="mt-3 text-sm text-slate-600">
               Three streamlined steps from repository connection to total architectural visibility.
@@ -849,7 +849,12 @@ export const LandingPage: React.FC = () => {
       {/* FAQ Section */}
       <section id="faq" className="py-20 bg-slate-50 border-b border-slate-200">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-slate-900 text-center mb-10">Frequently Asked Questions</h2>
+          <div className="text-left mb-10">
+            <h2 className="text-3xl font-bold text-slate-900">Frequently Asked Questions</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Everything you need to know about AST parsing, architecture maps, and enterprise security.
+            </p>
+          </div>
           <div className="space-y-3">
             {faqs.map((faq, idx) => (
               <div
@@ -880,14 +885,14 @@ export const LandingPage: React.FC = () => {
 
       {/* CTA Section */}
       <section className="py-24 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-left space-y-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
             Ready to explore your codebase in full fidelity?
           </h2>
-          <p className="text-sm text-slate-600 max-w-xl mx-auto leading-relaxed">
+          <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
             Experience the Stage 1 prototype now with preloaded demo architectures or import a repository into your local workspace.
           </p>
-          <div className="pt-2 flex justify-center gap-3">
+          <div className="pt-2 flex justify-start gap-3">
             <Link to="/dashboard">
               <Button variant="primary" size="lg" rightIcon={<ArrowRight className="w-4 h-4" />}>
                 Launch CodeMap Prototype
