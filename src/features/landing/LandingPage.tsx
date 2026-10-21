@@ -419,7 +419,7 @@ export const LandingPage: React.FC = () => {
       {/* Product Preview Section — Expansive Interactive Explorer */}
       <section id="preview" className="py-20 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-left max-w-3xl mb-12">
             <Badge variant="blue" size="md">
               Full Fidelity Developer Experience
             </Badge>

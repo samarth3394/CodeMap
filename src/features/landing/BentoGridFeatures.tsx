@@ -114,7 +114,7 @@ export const BentoGridFeatures: React.FC = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-left max-w-3xl mb-12">
           <Badge variant="blue" size="md">
             Built for High-Velocity Engineering Teams
           </Badge>
